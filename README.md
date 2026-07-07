@@ -1,5 +1,10 @@
 # metrics-collector
 
+![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)
+[![CI](https://github.com/ezhigval/metrics-collector/actions/workflows/ci.yml/badge.svg)](https://github.com/ezhigval/metrics-collector/actions/workflows/ci.yml)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Tier](https://img.shields.io/badge/tier-middle-5319e7)
+
 Lightweight metrics ingestion + Prometheus exposition + OTel traces. PG stores time-series for dashboard queries; Grafana included in compose.
 
 ## Quick start
