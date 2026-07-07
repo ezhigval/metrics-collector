@@ -5,6 +5,8 @@
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Tier](https://img.shields.io/badge/tier-middle-5319e7)
 
+**English** · [Русский](README.ru.md)
+
 Lightweight metrics ingestion + Prometheus exposition + OTel traces. PG stores time-series for dashboard queries; Grafana included in compose.
 
 ## Quick start
