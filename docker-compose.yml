@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: metrics
+      POSTGRES_PASSWORD: metrics
+      POSTGRES_DB: metrics
+    ports:
+      - "5438:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metrics"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  migrate:
+    image: golang:1.25-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: postgres://metrics:metrics@postgres:5432/metrics?sslmode=disable
+    command: sh -c "go install github.com/pressly/goose/v3/cmd/goose@latest && goose -dir migrations postgres \"$$DATABASE_URL\" up"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  server:
+    build: .
+    ports:
+      - "8089:8089"
+    environment:
+      PORT: "8089"
+      DATABASE_URL: postgres://metrics:metrics@postgres:5432/metrics?sslmode=disable
+      ENABLE_OTEL: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9094:9090"
+    depends_on:
+      - server
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  pgdata:
